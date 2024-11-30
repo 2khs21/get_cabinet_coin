@@ -5,19 +5,13 @@
 1.  credentials.env.example을 credentials.env 로 변경
 2.  USERNAME, PASSWORD 입력
 
-#### 시간 주기 설정
-
-- install_and_schedule.sh 의
-  `CRON_JOB="* 0 * * * $(pwd)/venv/bin/python3 $(pwd)/get_cabi_coin.py"`
-  현재 매일 자정에 실행
-
 ##### 실행권한 부여
 
-- chmod +x install_and_schedule.sh
+- `chmod +x install_and_schedule.sh`
 
 #### 스크립트 실행
 
-- ./install_and_schedule.sh
+- `./install_and_schedule.sh`
 - sudo 권한 필요 (절전모드를 해제하기 위해 pmset 설정)
 
 ---
