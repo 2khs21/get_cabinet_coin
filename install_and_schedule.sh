@@ -84,4 +84,4 @@ echo "$CRON_JOB" >> $CRON_FILE
 crontab $CRON_FILE
 rm $CRON_FILE
 
-echo "Setup complete! Your script will run every day at 8:00 AM."
+echo "Setup complete! Your script will run every day at 12:00(noon)."
