@@ -14,25 +14,29 @@ import time
 # 랜덤 대기 시간 설정 (예: 5초 ~ 15초 사이)
 random_wait = random.uniform(5, 15)  # 5.0초에서 15.0초 사이의 랜덤 시간
 print(f"Waiting for {random_wait:.2f} seconds before execution...")
-time.sleep(random_wait)
+# time.sleep(random_wait)
 
 print("Starting script execution...")
 
 # ----- 시작 ------ 
 
 # 1. 로그 설정
-log_filename = "cabi_coin_log.txt"
+log_filename = os.path.join(os.path.dirname(__file__), "cabi_coin_log.txt")
 logging.basicConfig(
     filename=log_filename,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
+    filemode="w"  # 기존 파일 덮어쓰기
 )
 
-# 2. 환경 변수 로드
-load_dotenv("credentials.env")
+# 스크립트의 경로를 기준으로 .env 파일 설정
+env_path = os.path.join(os.path.dirname(__file__), "credentials.env")
+load_dotenv(env_path)
+
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
+
 if not USERNAME or not PASSWORD:
     logging.error("Environment variables for USERNAME or PASSWORD are not set.")
     raise ValueError("Environment variables for USERNAME or PASSWORD are not set.")
@@ -40,7 +44,7 @@ if not USERNAME or not PASSWORD:
 
 # 3. 브라우저 설정
 options = webdriver.ChromeOptions()
-# options.add_argument('--headless')  # 브라우저를 숨김 모드로 실행
+options.add_argument('--headless')  # 브라우저를 숨김 모드로 실행
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 

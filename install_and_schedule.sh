@@ -1,5 +1,26 @@
 #!/bin/bash
 
+# Check if Homebrew is installed
+if ! command -v brew &> /dev/null; then
+  echo "Homebrew is not installed. Installing Homebrew..."
+  
+  # Install Homebrew
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  
+  # Add Homebrew to PATH (M1/M2 chip 경로 포함)
+  if [[ $(uname -m) == "arm64" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+  else
+    eval "$(/usr/local/bin/brew shellenv)"
+    echo 'eval "$(/usr/local/bin/brew shellenv)"' >> ~/.bash_profile
+  fi
+
+  echo "Homebrew installation complete!"
+else
+  echo "Homebrew is already installed."
+fi
+
 # Install ChromeDriver
 if command -v chromedriver &> /dev/null; then
     echo "ChromeDriver is already installed."
@@ -11,7 +32,8 @@ fi
 # Check ChromeDriver installed
 CHROMEDRIVER_PATH=$(which chromedriver)
 if [ -z "$CHROMEDRIVER_PATH" ]; then
-	echo -e "\033[31mError: ChromeDriver installation failed.\033[0m"  exit 1
+	echo -e "\033[31mError: ChromeDriver installation failed.\033[0m" 
+	exit 1
 fi
 
 # Create symbolic link for ChromeDriver
@@ -52,7 +74,7 @@ rm $REQUIREMENTS_FILE
 deactivate
 
 # Set up cron job
-CRON_JOB="0 8 * * * $(pwd)/venv/bin/python3 $(pwd)/get_cabi_coin.py"
+CRON_JOB="* 12 * * * $(pwd)/venv/bin/python3 $(pwd)/get_cabi_coin.py"
 CRON_FILE="cronjob_tmp"
 
 # Update cron jobs
