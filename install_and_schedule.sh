@@ -74,7 +74,7 @@ rm $REQUIREMENTS_FILE
 deactivate
 
 # Set up cron job
-CRON_JOB="0 0 * * * $(pwd)/venv/bin/python3 $(pwd)/get_cabi_coin.py"
+CRON_JOB="30 13 * * * $(pwd)/venv/bin/python3 $(pwd)/get_cabi_coin.py"
 CRON_FILE="cronjob_tmp"
 
 # Update cron jobs
@@ -87,6 +87,6 @@ rm $CRON_FILE
 
 
 # Add pmset wake schedule
-echo "Scheduling system wake at 00:00 ..."
-sudo pmset repeat wakeorpoweron MTWRFSU 00:00:00
-echo "Setup complete! Your script will run every day at 00:00(midnight)."
+echo "Scheduling system wake at 13:30 ..."
+sudo pmset repeat wakeorpoweron MTWRFSU 13:30:00
+echo "Setup complete! Your script will run every day at 13:30."
