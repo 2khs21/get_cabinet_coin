@@ -89,14 +89,23 @@ try:
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '줍기')]"))
         )
         coin_button.click()
-        logging.info("Coin collected successfully!")
     except TimeoutException:
-        logging.error("Login failed OR Coin button not found within the timeout period.")
-    
-    coin_button.click()
-    logging.info("Coin collected successfully!")
+        logging.error("Login failed within the timeout period.")
 
-    print("Coin collected successfully!")
+    # 동전 줍기 성공 확인 로직
+    try:
+        # "동전 줍기 성공" 모달 확인
+        success_modal = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//*[text()='동전 줍기 성공']"))
+        )
+        # 로그에 기록
+        logging.info("Success : get coin")
+
+    except Exception as e:
+        # 성공 메시지가 나타나지 않으면 에러 처리
+        logging.error(f"Coin collection failed or modal not found. Error: {e}")
+        print("Error: Coin collection failed.")
+
 
 except Exception as e:
     logging.error(f"An error occurred: {e}")
