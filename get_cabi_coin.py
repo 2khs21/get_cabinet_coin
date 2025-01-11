@@ -3,32 +3,56 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
-from selenium.common.exceptions import WebDriverException
-import sys
-
+from selenium.common.exceptions import TimeoutException, WebDriverException
 import os
 from dotenv import load_dotenv
-
-
 import random
+import sys
 import time
 
-# 랜덤 대기 시간 설정 (예: 5초 ~ 15초 사이)
-random_wait = random.uniform(5, 15)  # 5.0초에서 15.0초 사이의 랜덤 시간
-print(f"Waiting for {random_wait:.2f} seconds before execution...")
-# time.sleep(random_wait)
 
-print("Starting script execution...")
+def setup_logger():
+    """Set up logging configuration."""
+    log_filename = os.path.join(os.path.dirname(__file__), "cabi_coin_log.txt")
+    logging.basicConfig(
+        filename=log_filename,
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        filemode="w"
+    )
+
+
+def load_credentials():
+    """Load credentials from .env file."""
+    env_path = os.path.join(os.path.dirname(__file__), "credentials.env")
+    load_dotenv(env_path)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    if not username or not password:
+        logging.error("Environment variables for USERNAME or PASSWORD are not set.")
+        raise ValueError("Environment variables for USERNAME or PASSWORD are not set.")
+    return username, password
+
+
+def setup_driver():
+    """Set up Selenium WebDriver."""
+    options = webdriver.ChromeOptions()
+    # options.add_argument('--headless')  # Uncomment to run in headless mode
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    return webdriver.Chrome(options=options)
+
 
 def verify_current_url(driver, expected_url, timeout=5):
+    """Verify if the current URL matches the expected URL."""
     try:
-        # URL이 로드될 때까지 대기
         WebDriverWait(driver, timeout).until(
             lambda d: d.current_url.startswith(expected_url)
         )
         logging.info("URL verification successful.")
-        print("URL verification successful.")
     except TimeoutException:
         current_url = driver.current_url
         error_message = f"Error: Current URL is {current_url}, but expected {expected_url}."
@@ -36,122 +60,104 @@ def verify_current_url(driver, expected_url, timeout=5):
         raise WebDriverException(error_message)
 
 
-# ----- 시작 ------ 
-
-# 1. 로그 설정
-log_filename = os.path.join(os.path.dirname(__file__), "cabi_coin_log.txt")
-logging.basicConfig(
-    filename=log_filename,
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    filemode="w"  # 기존 파일 덮어쓰기
-)
-
-# 스크립트의 경로를 기준으로 .env 파일 설정
-env_path = os.path.join(os.path.dirname(__file__), "credentials.env")
-load_dotenv(env_path)
-
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
-
-if not USERNAME or not PASSWORD:
-    logging.error("Environment variables for USERNAME or PASSWORD are not set.")
-    raise ValueError("Environment variables for USERNAME or PASSWORD are not set.")
-
-
-# 3. 브라우저 설정
-options = webdriver.ChromeOptions()
-# options.add_argument('--headless')  # 브라우저를 숨김 모드로 실행
-options.add_argument('--no-sandbox')
-options.add_argument('--disable-dev-shm-usage')
-
-# 4. 드라이버 생성
-driver = webdriver.Chrome(options=options)
-
-try:
-    # Google에 접속
-    driver.get("https://cabi.42seoul.io/home")
-    logging.info("Accessed Cabi home page.")
-
-    # 로그인 버튼 클릭
-    login_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//button[text()='L O G I N']"))
-    )
-    login_button.click()
-    logging.info("Login button clicked.")
-
-    # 42 로그인 입력
-    username_input = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "username"))
-    )
-    username_input.send_keys(USERNAME)
-    logging.info("Username entered.")
-
-    password_input = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "password"))
-    )
-    password_input.send_keys(PASSWORD)
-    logging.info("Password entered.")
-
-    # 로그인 버튼 클릭
-    login_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.NAME, "login"))
-    )
-    login_button.click()
-    logging.info("Login submitted.")
-
-    # 로그인 확인
-    expected_url = "https://cabi.42seoul.io/home"
+def login_to_cabi(driver, username, password):
+    """Perform login to the Cabi website."""
     try:
-        verify_current_url(driver, expected_url)
-    except WebDriverException as e:
-        print("Login Failed")
-        logging.error("Login Failed")
-        sys.exit()
-        
+        driver.get("https://cabi.42seoul.io/home")
+        logging.info("Accessed Cabi home page.")
+
+        # Click login button
+        login_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[text()='L O G I N']"))
+        )
+        login_button.click()
+        logging.info("Login button clicked.")
+
+        # Enter login credentials
+        username_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "username"))
+        )
+        username_input.send_keys(username)
+        logging.info("Username entered.")
+
+        password_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, "password"))
+        )
+        password_input.send_keys(password)
+        logging.info("Password entered.")
+
+        # Submit login
+        login_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.NAME, "login"))
+        )
+        login_button.click()
+        logging.info("Login submitted.")
+
+        # Verify login success
+        verify_current_url(driver, "https://cabi.42seoul.io/home")
+        logging.info("Login successful.")
+    except Exception as e:
+        logging.error(f"Login failed: {e}")
+        sys.exit("Login failed. Check logs for details.")
 
 
-    # 동전 줍기 버튼 클릭
+def collect_coins(driver):
+    """Navigate to the store page and attempt to collect coins."""
     try:
         driver.get("https://cabi.42seoul.io/store")
-        coin_button = WebDriverWait(driver, 3).until(
+        logging.info("Navigated to the store page.")
+
+        # Click the '동전 주우러가기' button
+        coin_start_button = WebDriverWait(driver, 3).until(
             EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '동전 주우러가기')]"))
         )
-        coin_button.click()
+        coin_start_button.click()
+        logging.info("Clicked '동전 주우러가기' button.")
 
-        print("줍기시도!")
-        coin_button = WebDriverWait(driver, 3).until(
-            EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '줍기')]"))
+        # Activate overlay
+        driver.execute_script(
+            "document.querySelector('.WrapperStyled-sc-1r1ff4e-0.iPbizH').classList.add('on');"
         )
-        print("줍기 버튼 찾음")
-        if coin_button.is_enabled():
-            # 버튼이 활성화되어 있으면 클릭
-            coin_button.click()
-            logging.info("Coin button clicked successfully.")
-        else:
-            # 버튼이 비활성화되어 있으면 로그 기록
-            logging.info("A already collected the coin")
-            print("이미 주웠다!")
+        logging.info("Overlay activated.")
 
-        # success_modal = WebDriverWait(driver, 3).until(
-        #     EC.presence_of_element_located((By.XPATH, "//*[text()='동전 줍기 성공']"))
-        # )
+        # Wait for '줍기' button
+        coin_button = WebDriverWait(driver, 3).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), '줍기')]"))
+        )
+        coin_button.click()
+        time.sleep(3)
 
-        # print ("동전 줍기 성공")
-        # logging.info("Success : get coin")
+        logging.info("Coin collected successfully.")
+
+    except TimeoutException:
+        logging.error("Timeout while trying to collect coins.")
+        print("Error: Timeout while trying to collect coins.")
+    except Exception as e:
+        logging.error(f"Error during coin collection: {e}")
+        print("Error during coin collection.")
+
+
+def main():
+    setup_logger()
+    username, password = load_credentials()
+    driver = setup_driver()
+
+    try:
+        # Perform login
+        login_to_cabi(driver, username, password)
+
+        # Attempt to collect coins
+        collect_coins(driver)
 
     except Exception as e:
-        # 성공 메시지가 나타나지 않으면 에러 처리
-        logging.error(f"Coin collection failed or modal not found. Error: {e}")
-        print("Error: Coin collection failed.")
+        logging.error(f"An unexpected error occurred: {e}")
+        print("An unexpected error occurred. Check the log for details.")
+
+    finally:
+        driver.quit()
+        logging.info("Browser closed.")
+        print("Script execution finished.")
 
 
-except Exception as e:
-    logging.error(f"An error occurred: {e}")
-    print("An error occurred. Check the log for details.")
-
-finally:
-    driver.quit()
-    logging.info("Browser closed.")
-    print("Finish script")
+if __name__ == "__main__":
+    main()
