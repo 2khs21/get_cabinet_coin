@@ -52,11 +52,6 @@ if [ ! -d "venv" ]; then
   python3 -m venv venv
 fi
 
-# Generate requirements.txt dynamically
-REQUIREMENTS_FILE="requirements.txt"
-echo "selenium" > $REQUIREMENTS_FILE
-echo "python-dotenv" >> $REQUIREMENTS_FILE
-
 # Activate virtual environment and install packages
 source venv/bin/activate
 
@@ -64,6 +59,8 @@ source venv/bin/activate
 REQUIREMENTS_FILE="requirements.txt"
 echo "selenium" > $REQUIREMENTS_FILE
 echo "python-dotenv" >> $REQUIREMENTS_FILE
+echo "webdriver-manager" >> $REQUIREMENTS_FILE  # ✅ 이 줄 추가!
+
 
 echo "Installing required Python packages..."
 pip install --upgrade pip

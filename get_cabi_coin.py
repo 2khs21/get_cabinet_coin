@@ -4,6 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 import os
 from dotenv import load_dotenv
 import random
@@ -43,7 +45,10 @@ def setup_driver():
     # options.add_argument('--headless')  # Uncomment to run in headless mode
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    return webdriver.Chrome(options=options)
+
+    service = Service(ChromeDriverManager().install())
+
+    return webdriver.Chrome(service=service, options=options)
 
 
 def verify_current_url(driver, expected_url, timeout=5):
