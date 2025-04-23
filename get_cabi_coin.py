@@ -73,7 +73,7 @@ def login_to_cabi(driver, username, password):
 
         # Click login button
         login_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.XPATH, "//button[text()='L O G I N']"))
+            EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), '42 Seoul 로그인')]"))
         )
         login_button.click()
         logging.info("Login button clicked.")
